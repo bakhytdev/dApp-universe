@@ -1,15 +1,18 @@
 import { Injectable } from "@nestjs/common";
 import { Command, Positional } from "nestjs-command";
-import Web3 from "web3";
 import { isAddress } from 'web3-validator';
 import * as readline from "readline-sync";
-import * as BN from 'bn.js';
-import { number } from "yargs";
-
-const web3 = new Web3(new Web3.providers.HttpProvider('https://eth-goerli.g.alchemy.com/v2/LghGiUNiAVBdYk2dN-ykVv4miDqD7zln'));
+import { Web3Service } from "../web3.service";
 
 @Injectable()
 export class T29 {
+    web3: any;
+
+    constructor(
+        private readonly web3Service: Web3Service     
+    ) {
+        this.web3 = this.web3Service.alchemy();
+    }
 
     /**
     Задача 1
@@ -25,7 +28,7 @@ export class T29 {
         describe: 'Задача 29.1',
     })
     async T29_1() {
-        console.log('getBlockNumber: ', await web3.eth.getBlockNumber());
+        console.log('getBlockNumber: ', await this.web3.eth.getBlockNumber());
     }
 
     /**
@@ -63,7 +66,7 @@ export class T29 {
     async T29_3() {
         const address = readline.question("Enter address: ");
 
-        console.log('getBalance: ', await web3.eth.getBalance(address));
+        console.log('getBalance: ', await this.web3.eth.getBalance(address));
     }
 
     /**
@@ -82,7 +85,7 @@ export class T29 {
     async T29_4() {
         const txHash = readline.question("Enter txHash: ");
 
-        console.log('txHash Attributes: ', await web3.eth.getTransaction(txHash));
+        console.log('txHash Attributes: ', await this.web3.eth.getTransaction(txHash));
     }
 
     /**
@@ -102,7 +105,7 @@ export class T29 {
     })
     async T29_5() {
         const txHash = readline.question("Enter txHash: ");
-        const result = await web3.eth.getTransaction(txHash);
+        const result = await this.web3.eth.getTransaction(txHash);
 
         console.log(`From: ${result.from}`);
         console.log(`To: ${result.to}`);
@@ -124,7 +127,7 @@ export class T29 {
     })
     async T29_6() {
         const blockNumber = readline.question("Enter block number: ");
-        const result = await web3.eth.getBlock(blockNumber, true);
+        const result = await this.web3.eth.getBlock(blockNumber, true);
 
         console.log('Block number transactions', result.transactions);
     }
@@ -146,13 +149,13 @@ export class T29 {
     })
     async T29_7() {
         const blockNumber = readline.question("Enter block number: ");
-        const { transactions } = await web3.eth.getBlock(blockNumber, true);        
+        const { transactions } = await this.web3.eth.getBlock(blockNumber, true);        
 
-        let maxValue = new BN(0);
+        let maxValue = this.web3.utils.BN(0);
         let maxTransaction;
 
         transactions.map((transaction) => {
-            let value = new BN(transaction.value);
+            let value = new this.web3.utils.BN(transaction.value);
 
             if (value.gt(maxValue)) {
                 maxValue = value;
@@ -185,13 +188,13 @@ export class T29 {
     })
     async T29_8() {
         const blockNumber = readline.question("Enter block number: ");
-        const { transactions } = await web3.eth.getBlock(blockNumber, true);        
+        const { transactions } = await this.web3.eth.getBlock(blockNumber, true);        
 
-        let maxValue = new BN(0);
+        let maxValue = this.web3.utils.BN(0);
         let maxTransaction;
 
         transactions.map((transaction) => {
-            let value = new BN(transaction.value);
+            let value = this.web3.utils.BN(transaction.value);
 
             if (value.gt(maxValue)) {
                 maxValue = value;
@@ -199,8 +202,8 @@ export class T29 {
             }
         });
 
-        const fromBalance = await web3.eth.getBalance(maxTransaction.from);
-        const toBalance = await web3.eth.getBalance(maxTransaction.to);
+        const fromBalance = await this.web3.eth.getBalance(maxTransaction.from);
+        const toBalance = await this.web3.eth.getBalance(maxTransaction.to);
 
         console.log('maxValue: ', maxValue.toString());
         console.log('maxTransaction: ', maxTransaction.hash);
@@ -239,7 +242,7 @@ export class T29 {
 
         for (let blockNumber = startBlock; blockNumber <= endBlock; blockNumber++) {
             console.log(`check block number ${blockNumber}`);
-            const { transactions } = await web3.eth.getBlock(blockNumber, true);   
+            const { transactions } = await this.web3.eth.getBlock(blockNumber, true);   
             
             if (transactions) {
                 transactions.map((transaction) => {
