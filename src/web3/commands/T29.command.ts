@@ -1,6 +1,5 @@
 import { Injectable } from "@nestjs/common";
 import { Command, Positional } from "nestjs-command";
-import { isAddress } from 'web3-validator';
 import * as readline from "readline-sync";
 import { Web3Service } from "../web3.service";
 
@@ -47,7 +46,7 @@ export class T29 {
     async T29_2() {
         const address = readline.question("Enter address: ");
 
-        console.log('isAddress: ', isAddress(address));
+        console.log('isAddress: ', this.web3.utils.isAddress(address));
     }
 
     /**

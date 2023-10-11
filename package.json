@@ -29,8 +29,7 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0",
     "solc": "^0.8.21",
-    "web3": "^1.10.0",
-    "web3-validator": "^2.0.2",
+    "web3": "1.2.11",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
