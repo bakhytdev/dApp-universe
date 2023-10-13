@@ -231,6 +231,8 @@ export class T35 {
     В уроке 17 (наследование) вы реализовывали контракт credit 
 
     Напишите скрипт для работы с этим контрактом
+
+    Запуск: npx nestjs-command t35:task3
     */
     @Command({
         command: 't35:task3',
