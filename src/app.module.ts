@@ -11,6 +11,8 @@ import { T31 } from './web3/commands/T31.command';
 import { T32 } from './web3/commands/T32.command';
 import { T34 } from './web3/commands/T34.command';
 import { T35 } from './web3/commands/T35.command';
+import { T37 } from './web3/commands/T37.command';
+import { T38 } from './web3/commands/T38.command';
 
 @Module({
   imports: [
@@ -22,6 +24,6 @@ import { T35 } from './web3/commands/T35.command';
     })
   ],
   controllers: [AppController],
-  providers: [AppService, Web3Service, ExampleCommand, T29, T31, T32, T34, T35],
+  providers: [AppService, Web3Service, ExampleCommand, T29, T31, T32, T34, T35, T37, T38],
 })
 export class AppModule {}

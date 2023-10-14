@@ -19,8 +19,16 @@ export class Web3Service {
         return new Web3(`https://eth-goerli.g.alchemy.com/v2/${this.ALCHEMY_API_KEY}`);
     }
 
+    alchemyWSS() {
+        return new Web3(`wss://eth-goerli.g.alchemy.com/v2/${this.ALCHEMY_API_KEY}`);
+    }
+
     ganache() {
         return new Web3(`http://localhost:7545`);
+    }
+
+    ganacheWS() {
+        return new Web3(`ws://localhost:7545`);
     }
 
     compile(fileName, contractNames) {     
