@@ -24,7 +24,7 @@ export class Web3Service {
     }
 
     ganache() {
-        return new Web3(`http://localhost:7545`);
+        return new Web3(`http://127.0.0.1:7545`);
     }
 
     ganacheWS() {

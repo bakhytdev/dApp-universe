@@ -1,6 +1,7 @@
 import { Injectable, StreamableFile } from "@nestjs/common";
 import { Command } from "nestjs-command";
 import * as readline from "readline-sync";
+import Web3 from "web3";
 import { Web3Service } from "../web3.service";
 
 @Injectable()
@@ -8,7 +9,8 @@ export class T35 {
     web3: any;
     contract: string;
 
-    defaultKey = "0xb6f15a0b8278e608b22f021f8869081539c245cd2186deb11d7219213fc3e8e2";
+    defaultKey = "0x2b71fa26b9b1f9e9ee3eb8a60b19886ce3c737111ab0d2a1561c2dbe5a819d37";
+    defaultAdr = "0x249C04B34E873b3E5B82CdbEF22aB735e1b7e2b9";
 
     constructor(
         private readonly web3Service: Web3Service     
@@ -152,18 +154,88 @@ export class T35 {
         
         let contract = new this.web3.eth.Contract(ABI);
         
-        const x:string = readline.question("Enter x: ");
-        const y:string = readline.question("Enter y: ");
-        const str:string = readline.question("Enter str: ");
+        const x:number = readline.question("Enter x: ") || 1;
+        const y:number = readline.question("Enter y: ") || 2;
+        const str:string = readline.question("Enter str: ") || "TEST";
 
-        await contract.deploy({
-            data: bytecode,
-            arguments: [x, y, str]
-        })
-        .send({ from: account.address, gas: 1_000_000})
-        .then((instance) => contract = instance);
+        const instance = await contract
+                            .deploy({
+                                data: bytecode,
+                                arguments: [x, y, str]
+                            })
+                            .send({ from: account.address, gas: 1_000_000 });
 
-        await this.choose(contract, account);
+        //await this.choose(instance, account);
+
+        //console.log(instance.methods);
+    
+        const keys = Object.keys(instance.methods);
+        const exit = 'Exit()';
+        const methods = [
+            { 
+                fn: exit, 
+                payable: false,
+                inputs: [],
+                constant: false
+            }
+        ];
+
+        keys.map((key) => {
+            if (key.includes('0x')) {
+                const pre = keys.indexOf(key) - 1;
+                methods.push({ ...{ fn: keys[pre] }, ...instance._jsonInterface.find(item => item.signature === key) });
+            }
+        });
+
+        console.log('All methods: ', methods);
+
+        while(true) {
+            const selected = readline.question(`\nChoose method: \n${methods.map((item, index) => `${index}. ${item.fn}`).join("\n")} \n`);
+
+            if (selected) {
+                const method = methods[selected];
+
+                const args = [];
+
+                method.inputs.map((input) => {
+                    switch(input.type) {
+                        case 'address':
+                            args.push(readline.question(`Enter ${input.name}:${input.type}: `) || this.defaultAdr);
+                            break;
+                        case 'tuple':
+                            const tuple = '["123", "TEST"]'
+                            console.log('Example tuple: ', tuple);
+                            args.push(JSON.parse(readline.question(`Enter ${input.name}:${input.type}: `) || tuple));
+                            break;
+                        default:
+                            args.push(readline.question(`Enter ${input.name}:${input.type}: `));
+                    }
+                });
+    
+                if (method.fn === exit) process.exit();
+
+                //console.log(...args);
+    
+                if (method.constant) {
+                    console.log(`${method.fn}.send()`);
+                    await instance.methods[method.fn](...args)
+                            .call({ 
+                                from: account.address,
+                                gas: 1_000_000,
+                            })
+                            .then((result) => console.log('result: ', result));
+                } else {
+                    console.log(`${method.fn}.call()`);
+                    await instance.methods[method.fn](...args)
+                            .send({ 
+                                from: account.address, 
+                                gas: 1_000_000 
+                            })
+                            .on('receipt', (receipt) => console.log('receipt:', receipt))
+                            .then((result) => console.log('result: ', result));
+                }
+            }
+        }
     }
 
     /**
@@ -198,15 +270,15 @@ export class T35 {
             
             let contract = new this.web3.eth.Contract(ABI);
             
-            const x:string = readline.question("Enter x: ");
-            const y:string = readline.question("Enter y: ");
-            const str:string = readline.question("Enter str: ");
+            const x:string = readline.question("Enter x: ") || 1;
+            const y:string = readline.question("Enter y: ") || 2;
+            const str:string = readline.question("Enter str: ") || "TEST";
     
             const result = await contract.deploy({
                 data: bytecode,
                 arguments: [x, y, str]
             })
-            .send({ from: account.address, gas: 1_000_000});
+            .send({ from: account.address, gas: 1_000_000 });
 
             return result;
         })(privateKey);
@@ -219,12 +291,80 @@ export class T35 {
         
         const contractCaller = new this.web3.eth.Contract(ABI);
         const instance = await contractCaller.deploy({
-            data: bytecode,
-            arguments: [mainContract.options.address]
-        })
-        .send({ from: account.address, gas: 2_000_000});
+                                                data: bytecode,
+                                                arguments: [mainContract.options.address]
+                                            })
+                                            .send({ from: account.address, gas: 2_000_000});
 
-        await this.choose(instance, account);
+        //await this.choose(instance, account);
+
+        const keys = Object.keys(instance.methods);
+        const exit = 'Exit()';
+        const methods = [
+            { 
+                fn: exit, 
+                payable: false,
+                inputs: [],
+                constant: false
+            }
+        ];
+
+        keys.map((key) => {
+            if (key.includes('0x')) {
+                const pre = keys.indexOf(key) - 1;
+                methods.push({ ...{ fn: keys[pre] }, ...instance._jsonInterface.find(item => item.signature === key) });
+            }
+        });
+
+        console.log('All methods: ', methods);
+
+        while(true) {
+            const selected = readline.question(`\nChoose method: \n${methods.map((item, index) => `${index}. ${item.fn}`).join("\n")} \n`);
+
+            if (selected) {
+                const method = methods[selected];
+
+                const args = [];
+
+                method.inputs.map((input) => {
+                    switch(input.type) {
+                        case 'address':
+                            args.push(readline.question(`Enter ${input.name}:${input.type}: `) || this.defaultAdr);
+                            break;
+                        case 'tuple':
+                            const tuple = '["123", "TEST"]'
+                            console.log('Example tuple: ', tuple);
+                            args.push(JSON.parse(readline.question(`Enter ${input.name}:${input.type}: `) || tuple));
+                            break;
+                        default:
+                            args.push(readline.question(`Enter ${input.name}:${input.type}: `));
+                    }
+                });
+    
+                if (method.fn === exit) process.exit();
+
+                console.log(...args);
+    
+                if (method.constant) {
+                    console.log(`${method.fn}.call()`);
+                    await instance.methods[method.fn](...args)
+                            .call({ 
+                                from: account.address, 
+                                gas: 5_000_000 
+                            })
+                            .then((result) => console.log('result: ', result));
+                } else {
+                    console.log(`${method.fn}.send()`);
+                    await instance.methods[method.fn](...args)
+                            .send({ 
+                                from: account.address,
+                                gas: 1_000_000,
+                            })
+                            .on('receipt', (receipt) => console.log('receipt:', receipt))
+                            .then((result) => console.log('result: ', result));
+                }
+            }
+        }
     }
 
     /**
@@ -263,13 +403,14 @@ export class T35 {
             { 
                 fn: exit, 
                 payable: false,
-                inputs: []
+                inputs: [],
+                constant: false
             }
         ];
 
         keys.map((key) => {
             if (key.includes('0x')) {
-                const next = keys.indexOf(key) + 1;
+                const next = keys.indexOf(key) - 1;
                 methods.push({ ...{ fn: keys[next] }, ...instance._jsonInterface.find(item => item.signature === key) });
             }
         });
@@ -288,22 +429,36 @@ export class T35 {
                     args.push(readline.question(`Enter ${input.name}:${input.type}: `));
                 });
     
-                if (method.fn === exit) return;
+                if (method.fn === exit) process.exit();
+
+                console.log(...args);
     
                 if (method.payable) {
+                    console.log(`${method.fn}.send()`);
                     const value = readline.question(`Enter value: `);
-                    console.log(`${method.fn}.send(${value})`);
-                    await instance.methods[method.fn](...args)
-                            .send({ 
-                                from: account.address,
-                                value
-                            })
-                            .on('receipt', (receipt) => console.log('receipt:', receipt))
-                            .then((result) => console.log('result: ', result));
+                    try {
+                        await instance.methods[method.fn](...args)
+                        .send({ 
+                            from: account.address,
+                            gas: 1_000_000,
+                            value
+                        })
+                        .on('receipt', (receipt) => console.log('receipt: ', receipt))
+                        .then((result) => console.log('result: ', result));
+                    } catch (err) {
+                        console.log(err.data);
+                    }
                 } else {
                     console.log(`${method.fn}.call()`);
-                    await instance.methods[method.fn](...args).call()
-                            .then((result) => console.log('result: ', result));;
+                    try {
+                        await instance.methods[method.fn](...args).call({
+                            from: account.address,
+                            gas: 1_000_000
+                        })
+                        .then((result) => console.log('result: ', result));
+                    } catch (err) {
+                        console.log(err.data);
+                    }
                 }
             }
         }

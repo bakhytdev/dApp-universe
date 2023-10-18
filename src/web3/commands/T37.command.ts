@@ -102,21 +102,21 @@ export class T37 {
     async T37_2() {
         const wss = this.web3Service.alchemyWSS();
         
-        wss.eth.subscribe('newBlockHeaders')
-                        .on("error", console.log)
-                        .on("data", async (blockHeader) => {                            
-                            const number = blockHeader.number;
-                            const block = await wss.eth.getBlock(number, true);
-                            let sum = 0
+        // wss.eth.subscribe('newBlockHeaders')
+        //                 .on("error", console.log)
+        //                 .on("data", async (blockHeader) => {                            
+        //                     const number = blockHeader.number;
+        //                     const block = await wss.eth.getBlock(number, true);
+        //                     let sum = 0
                             
-                            block?.transactions.map(tx => {
-                                sum += Number(tx.value);
-                            });         
+        //                     block?.transactions.map(tx => {
+        //                         sum += Number(tx.value);
+        //                     });         
                             
-                            console.log('Block number: ', number);
-                            console.log('Count transactions: ', block.transactions.length);
-                            console.log('Sum transactions: ', sum);
-                        })
+        //                     console.log('Block number: ', number);
+        //                     console.log('Count transactions: ', block.transactions.length);
+        //                     console.log('Sum transactions: ', sum);
+        //                 })
     }
 
     /**

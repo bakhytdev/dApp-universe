@@ -2,13 +2,12 @@
 
 pragma solidity 0.8.19;
 
-struct St{
+struct St {
     uint256 number;
     string str;
 }
 
 contract T35_2_Main {
-
     uint256 public x;
     uint256 public y;
     string public str;
@@ -40,7 +39,7 @@ contract T35_2_Main {
         return data;
     }
 
-    function addToMap(address _adr, St memory _st) public {
+    function addToMap(address _adr, St memory _st) public{
         map[_adr] = _st;
     }
 }
@@ -49,8 +48,7 @@ interface T35_2_Interface {
     function x() external view returns (uint256);
     function y() external view returns (uint256);
     function str() external view returns (string memory);
-    function data(uint256) external view returns (uint256[] memory);
-    function map(address) external view returns (St memory);
+    function map(address) view external returns (St memory);
 
     function setXY(uint256, uint256) external returns (uint256);
     function setStr(string memory) external;
@@ -58,7 +56,8 @@ interface T35_2_Interface {
     function addToMap(address, St memory) external;
 }
 
-contract T35_2_Caller {
+// Secondary contract to access data from main contract
+contract T35_2_Caller{
     T35_2_Interface mainContract;
 
     constructor(address _adr) {
@@ -77,12 +76,15 @@ contract T35_2_Caller {
         return mainContract.str();
     }
 
-    function data(uint256 _index) external view returns (uint256[] memory) {
-        return mainContract.data(_index);
-    }
-
-    function map(address _adr) external view returns (St memory) {
-        return mainContract.map(_adr);
+    function map(address _adr) public view returns (St memory) {
+        bytes memory _payload = abi.encodeWithSignature(
+            "map(address)",
+            _adr
+        );
+        (bool success, bytes memory returnData) = address(mainContract).staticcall(_payload);
+        require(success);
+        (uint256 _number, string memory _str) = abi.decode(returnData, (uint256, string));
+        return St(_number, _str);
     }
 
     function setXY(uint256 _x, uint256 _y)public returns(uint256){
@@ -119,11 +121,12 @@ contract T35_2_Caller {
 
     function addToMap(address _adr, St memory _st) public {
         bytes memory _payload = abi.encodeWithSignature(
-            "addToMap(address, St)",
-            _adr,
-            _st
+            "addToMap(address,(uint256,string))",
+            _adr, //0xC80ccE01E333f1177f0A423EC1B45ADbD394B2b1
+            _st //["123", "TEST"]
         );
         (bool success,) = address(mainContract).call(_payload);
         require(success);
     }
+
 }
