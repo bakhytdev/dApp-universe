@@ -2,6 +2,7 @@ import { Injectable, StreamableFile } from "@nestjs/common";
 import { Command } from "nestjs-command";
 import * as readline from "readline-sync";
 import { Web3Service } from "../web3.service";
+import BN from "bn.js";
 
 @Injectable()
 export class T38 {
@@ -9,8 +10,8 @@ export class T38 {
     contract: string;
 
     defaultKeys = [
-        "0xe4d5fb4e394a5c1b88214aacc6dfd49bf87e0d7a109d6bbdf7b670ec2a85ffee",
-        "0x9188a4ff8bb9a937cd22876bba7740ec29637713c54c2bf544e4e84c5e074d91"
+        "0xc2384fa7ecd685215652b379a6b359022ccdbfbc5982b49686c57943a763b55f",
+        "0x5a0629b0e398b48d467e4a507c442f7da09679b3264abfa723616406d31c3323"
     ];
 
     constructor(
@@ -88,9 +89,10 @@ export class T38 {
 
         const event = this.web3.utils.sha3("TargetEvent(uint256)");
 
-        instanceRespondent.events.TargetEvent({ topics: [event] })
-                                    .on("data", (log) => console.log(log.event, log))
-                                    .on("error", (err) => console.log("ERROR", err));
+        const subscription = instanceRespondent.events.TargetEvent({ topics: [event] });
+
+        subscription.on('error', error => console.log('Error: ', error));
+        subscription.on('data', async log => console.log(log.event, log));
         
         await instanceCaller.methods.call(instanceRespondent.options.address, calldata).send({
             from: accountCaller.address,
@@ -115,9 +117,6 @@ export class T38 {
         const utils = this.web3.utils;
         const number = 123456789;
 
-        console.log(new utils.BN(number).toString());
-        console.log(number, ' isBigNumber ', utils.isBigNumber(number).toString());
-
         const getHex = utils.randomHex(32);
         console.log('randomHex: ', getHex);
 
@@ -138,7 +137,11 @@ export class T38 {
 
         console.log('Gwei toWei: ', utils.toWei('100', 'Gwei'));
         
-        
-        return;
+        console.log('BN', new BN(number).toString());
+
+        const a = new BN('dead', 16);
+        const b = new BN('101010', 2);
+        var res = a.add(b);
+        console.log(res.toString(10)); 
     }
 }
