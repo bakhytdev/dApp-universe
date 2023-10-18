@@ -9,8 +9,8 @@ export class T37 {
     contract: string;
 
     defaultKeys = [
-        "0x936b72cbe3c6ed92d71b34072788198cd0883f152f4ddae8a7108d735c577de4",
-        "0xf15319eff32b63de23cc13f395836c0aa16410187f454a4bdb913a4573657b82"
+        "0xdf9ff97e6bc110d7c211ab542c9f7dc5e3885b4c8e6be2c079fe303b43a4f0cf",
+        "0xe61a92fbef921c0f9f5b12c30dfd847b8adea389e48b7a9519d18cc8a83c8928"
     ];
 
     constructor(
@@ -50,39 +50,36 @@ export class T37 {
         const privateKeyReceiver:string = readline.question("Enter private key Receiver: ") || this.defaultKeys[1];
         const accountReceiver = this.web3.eth.accounts.privateKeyToAccount(privateKeyReceiver);
 
-        this.web3.eth.subscribe('pendingTransactions')
-                        .on("error", console.log)
-                        .on("data", async (txHash) => {
-                            const transaction = await this.web3.eth.getTransaction(txHash);
+        const subscription = await this.web3.eth.subscribe('pendingTransactions');
 
-                            if ([transaction.from, transaction.to].includes(accountSender.address)) {
-                                console.log("Sender transaction: ", transaction);
-                            }
-                        });
+        subscription.on('error', error => console.log('Error: ', error));
+        subscription.on('data', async txHash => {
+            const transaction = await this.web3.eth.getTransaction(txHash);
+
+            if ([transaction.from, transaction.to].includes(accountSender.address)) {
+                console.log("Sender transaction: ", transaction);
+            }
+        });
 
         const txSender = await this.web3.eth.accounts.signTransaction({
             from: accountSender.address,
             to: accountReceiver.address,
             value: 1_000_000_000_000_000_000,
-            gas: 21_000
+            gas: 21_000,
+            gasPrice: await this.web3.eth.getGasPrice()
         }, privateKeySender);
 
-        await this.web3.eth.sendSignedTransaction(txSender.rawTransaction)
-                                .on('receipt', (receipt) => {
-                                    console.log('txSender: ', receipt)
-                                });
+        await this.web3.eth.sendSignedTransaction(txSender.rawTransaction).on('receipt', (receipt) => console.log('txSender: ', receipt));
 
         const txReceiver = await this.web3.eth.accounts.signTransaction({
             from: accountReceiver.address,
             to: accountSender.address,
             value: 1_000_000_000_000_000_000,
-            gas: 21_000
+            gas: 21_000,
+            gasPrice: await this.web3.eth.getGasPrice()
         }, privateKeyReceiver);
 
-        await this.web3.eth.sendSignedTransaction(txReceiver.rawTransaction)
-                                .on('receipt', (receipt) => {
-                                    console.log('txReceiver: ', receipt)
-                                });
+        await this.web3.eth.sendSignedTransaction(txReceiver.rawTransaction).on('receipt', (receipt) => console.log('txReceiver: ', receipt));
     }
 
     /**
@@ -101,22 +98,23 @@ export class T37 {
     })
     async T37_2() {
         const wss = this.web3Service.alchemyWSS();
-        
-        // wss.eth.subscribe('newBlockHeaders')
-        //                 .on("error", console.log)
-        //                 .on("data", async (blockHeader) => {                            
-        //                     const number = blockHeader.number;
-        //                     const block = await wss.eth.getBlock(number, true);
-        //                     let sum = 0
-                            
-        //                     block?.transactions.map(tx => {
-        //                         sum += Number(tx.value);
-        //                     });         
-                            
-        //                     console.log('Block number: ', number);
-        //                     console.log('Count transactions: ', block.transactions.length);
-        //                     console.log('Sum transactions: ', sum);
-        //                 })
+
+        const subscription = await wss.eth.subscribe('newHeads');
+
+        subscription.on('error', error => console.log('Error: ', error));
+        subscription.on('data', async blockHead => {
+                const number = blockHead.number;
+                const block = await wss.eth.getBlock(number, true);
+                let sum = 0
+                
+                block?.transactions.map(tx => {
+                    sum += Number(tx.value);
+                });         
+                
+                console.log('Block number: ', number);
+                console.log('Count transactions: ', block.transactions.length);
+                console.log('Sum transactions: ', sum);        
+        });
     }
 
     /**
@@ -168,7 +166,8 @@ export class T37 {
             from: accountSender.address,
             to: instance.options.address,
             value: 1_000_000_000,
-            gas: 50_000
+            gas: 50_000,
+            gasPrice: await this.web3.eth.getGasPrice()
         }, privateKeySender);
 
         await this.web3.eth.sendSignedTransaction(tx.rawTransaction).on('receipt', (receipt) => console.log('txReceiver: ', receipt));
@@ -223,7 +222,8 @@ export class T37 {
             from: accountSender.address,
             to: instance.options.address,
             value: 1_000_000_000,
-            gas: 50_000
+            gas: 50_000,
+            gasPrice: await this.web3.eth.getGasPrice()
         }, privateKeySender);
 
         await this.web3.eth.sendSignedTransaction(tx.rawTransaction).on('receipt', (receipt) => console.log('txReceiver: ', receipt));
