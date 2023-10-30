@@ -13,6 +13,9 @@ import { T34 } from './web3/commands/T34.command';
 import { T35 } from './web3/commands/T35.command';
 import { T37 } from './web3/commands/T37.command';
 import { T38 } from './web3/commands/T38.command';
+import { EthersService } from './ethers/ethers.service';
+import { EthersCommand } from './ethers/commands/ethers.command';
+import { T52 } from './ethers/commands/T52.command';
 
 @Module({
   imports: [
@@ -24,6 +27,14 @@ import { T38 } from './web3/commands/T38.command';
     })
   ],
   controllers: [AppController],
-  providers: [AppService, Web3Service, ExampleCommand, T29, T31, T32, T34, T35, T37, T38],
+  providers: [
+    AppService, 
+    Web3Service, 
+    ExampleCommand, 
+    T29, T31, T32, T34, T35, T37, T38, 
+    EthersService,
+    EthersCommand,
+    T52
+  ],
 })
 export class AppModule {}
