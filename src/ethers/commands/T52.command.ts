@@ -310,8 +310,14 @@ export class T52 {
         const balance = await provider.getBalance(address);
         const code = await provider.getCode(address);
 
-        console.log('getBalance: ', balance);
-        console.log('getCode: ', code);
+        //console.log('getBalance: ', balance);
+        //console.log('getCode: ', code);
+
+        if (code != '0x') {
+            console.log('Введите индекс слота: ');
+            const slot = readline.prompt();
+            console.log(await provider.getStorage(address, slot));
+        }
 
         process.exit();
     }
