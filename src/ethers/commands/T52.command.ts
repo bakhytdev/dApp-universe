@@ -7,20 +7,10 @@ import { ethers } from "ethers";
 
 @Injectable()
 export class T52 {
-    private ALCHEMY_API_URI: string;
-    private ALCHEMY_API_KEY: string;
-    private ALCHEMY_API_HOST: string;
-    private GANACHE_HOST: string;
 
     constructor(
-        private configService: ConfigService,
         private readonly ethersService: EthersService  
-    ) {
-        this.ALCHEMY_API_URI = this.configService.get<string>('ALCHEMY_API_URI');
-        this.ALCHEMY_API_KEY = this.configService.get<string>('ALCHEMY_API_KEY');
-        this.ALCHEMY_API_HOST = [this.ALCHEMY_API_URI, this.ALCHEMY_API_KEY].join('');
-        this.GANACHE_HOST = this.configService.get<string>('GANACHE_HOST');
-    }
+    ) {}
 
     /**
     Задача 1
@@ -61,7 +51,7 @@ export class T52 {
                 break;
             case '2':
                 console.log('Укажите точку подключения:');
-                network = readline.prompt() || `${this.ALCHEMY_API_URI}${this.ALCHEMY_API_KEY}`;
+                network = readline.prompt() || this.ethersService.getGoerliHost();
                 provider = new ethers.JsonRpcProvider(network);
                 break;
             case '3':
@@ -72,7 +62,7 @@ export class T52 {
                 network = readline.prompt() || 'goerli';
                 
                 console.log('Укажите API ключ:');
-                const key = readline.prompt() || `${this.ALCHEMY_API_KEY}`;
+                const key = readline.prompt() || this.ethersService.getGoerliKey();
 
                 if (api === 'Alchemy') {
                     provider = new ethers.AlchemyProvider(network, key);
@@ -114,10 +104,10 @@ export class T52 {
 
         switch(choose) {
             case '1':
-                provider = new ethers.JsonRpcProvider(this.GANACHE_HOST);
+                provider = new ethers.JsonRpcProvider(this.ethersService.getGanacheHost());
                 break;
             case '2':
-                provider = new ethers.AlchemyProvider('goerli', `${this.ALCHEMY_API_KEY}`);
+                provider = new ethers.AlchemyProvider('goerli',  this.ethersService.getGoerliKey());
                 break;
             default:
                 provider = ethers.getDefaultProvider('goerli');
@@ -173,11 +163,9 @@ export class T52 {
                     process.env.ETHEREUM_NETWORK,
                     process.env.INFURA_API_KEY
                 );
-                //0xa8138112b49ea6c9483cece46158902dcddc9380e2fbdf48b3388c0f1ce084ca
                 break;
             case '2':
-                provider = new ethers.AlchemyProvider('goerli', `${this.ALCHEMY_API_KEY}`);
-                //0xef69f4d972ba5d68e1ee051a4c510bb8cd9b919bbbc2316d716f20b0893e6ceb
+                provider = new ethers.AlchemyProvider('goerli',  this.ethersService.getGoerliKey());
                 break;
             default:
                 provider = ethers.getDefaultProvider('goerli' || 'sepolia');
@@ -218,7 +206,7 @@ export class T52 {
         describe: 'Задача 52.4',
     })
     async T52_4() {   
-        const provider = new ethers.AlchemyProvider('goerli', `${this.ALCHEMY_API_KEY}`);
+        const provider = new ethers.AlchemyProvider('goerli', this.ethersService.getGoerliKey());
         const transactionRequest = {
             from: '',
             to: '',
@@ -277,7 +265,7 @@ export class T52 {
         describe: 'Задача 52.5',
     })
     async T52_5() {   
-        const provider = new ethers.AlchemyProvider('goerli', `${this.ALCHEMY_API_KEY}`);
+        const provider = new ethers.AlchemyProvider('goerli', this.ethersService.getGoerliKey());
 
         console.log('Введите номер блока');
         const blockNumber = readline.prompt();
@@ -315,7 +303,7 @@ export class T52 {
         describe: 'Задача 52.6',
     })
     async T52_6() {
-        const provider = new ethers.AlchemyProvider('goerli', `${this.ALCHEMY_API_KEY}`);
+        const provider = new ethers.AlchemyProvider('goerli', this.ethersService.getGoerliKey());
 
         console.log('Введите адрес аккаунта');
         const address = readline.prompt();
