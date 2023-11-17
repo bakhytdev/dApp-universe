@@ -33,7 +33,7 @@ import { T55 } from './ethers/commands/T55.command';
     AppService, 
     Web3Service, 
     ExampleCommand, 
-    T29, T31, T32, T34, T35, T37, T38, 
+    //T29, T31, T32, T34, T35, T37, T38, 
     EthersService,
     EthersCommand,
     T52, T54, T55
