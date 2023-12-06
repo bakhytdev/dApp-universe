@@ -20,6 +20,7 @@ import { T54 } from './ethers/commands/T54.command';
 import { T55 } from './ethers/commands/T55.command';
 import { T57 } from './ethers/commands/T57.command';
 import { T58 } from './ethers/commands/T58.command';
+import { T60 } from './ethers/commands/T60.command';
 
 @Module({
   imports: [
@@ -38,7 +39,7 @@ import { T58 } from './ethers/commands/T58.command';
     //T29, T31, T32, T34, T35, T37, T38, 
     EthersService,
     EthersCommand,
-    T52, T54, T55, T57, T58
+    T52, T54, T55, T57, T58, T60
   ],
 })
 export class AppModule {}
